@@ -1,4 +1,11 @@
-﻿namespace ZbW.Testing.Dms.Client.ViewModels
+﻿using System.IO;
+using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
+using ZbW.Testing.Dms.Client.Model;
+using ZbW.Testing.Dms.Client.Services.Interfaces;
+using ZbW.Testing.Dms.Client.Views;
+
+namespace ZbW.Testing.Dms.Client.ViewModels
 {
     using System;
     using System.Collections.Generic;
@@ -162,10 +169,51 @@
             }
         }
 
-        private void OnCmdSpeichern()
+        private async void OnCmdSpeichern()
         {
-            // TODO: Add your Code here
+            if (string.IsNullOrEmpty(Bezeichnung) || string.IsNullOrEmpty(SelectedTypItem) ||
+                string.IsNullOrEmpty(Stichwoerter) || ValutaDatum == null)
+            {
+                MessageBox.Show("Es müssen alle Pflichtfelder ausgefüllt werden!", "Achtung!", MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+            
+            var storage = LoginView.ServiceProvider.GetService<IStorageService>();
+            try
+            {
+                using (var stream = File.OpenRead(_filePath))
+                {
+                    var doc = new Document()
+                    {
+                        Id = Guid.NewGuid(),
+                        File = stream,
+                        Metadata = new MetadataItem()
+                        {
+                            CreationTime = Erfassungsdatum,
+                            FileEnding = Path.GetExtension(_filePath),
+                            FileName = Bezeichnung,
+                            Keywords = Stichwoerter,
+                            Typ = SelectedTypItem,
+                            Username = Benutzer,
+                            Valuta = ValutaDatum.GetValueOrDefault()
+                        }
+                    };
 
+                    await storage.SaveDocument(doc);
+                }
+
+                if (IsRemoveFileEnabled)
+                {
+                    File.Delete(_filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Failed to Save!", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            
             _navigateBack();
         }
     }

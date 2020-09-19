@@ -1,4 +1,10 @@
-﻿namespace ZbW.Testing.Dms.Client.ViewModels
+﻿using System;
+using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
+using ZbW.Testing.Dms.Client.Services.Interfaces;
+using ZbW.Testing.Dms.Client.Views;
+
+namespace ZbW.Testing.Dms.Client.ViewModels
 {
     using System.Collections.Generic;
 
@@ -10,9 +16,9 @@
 
     internal class SearchViewModel : BindableBase
     {
-        private List<MetadataItem> _filteredMetadataItems;
+        private List<Document> _filteredDocumentItems;
 
-        private MetadataItem _selectedMetadataItem;
+        private Document _selectedDocumentItem;
 
         private string _selectedTypItem;
 
@@ -24,7 +30,7 @@
         {
             TypItems = ComboBoxItems.Typ;
 
-            CmdSuchen = new DelegateCommand(OnCmdSuchen);
+            CmdSuchen = new DelegateCommand(OnCmdSuchen, OnCanCmdSuchen);
             CmdReset = new DelegateCommand(OnCmdReset);
             CmdOeffnen = new DelegateCommand(OnCmdOeffnen, OnCanCmdOeffnen);
         }
@@ -44,7 +50,10 @@
 
             set
             {
-                SetProperty(ref _suchbegriff, value);
+                if (SetProperty(ref _suchbegriff, value))
+                {
+                    CmdSuchen.RaiseCanExecuteChanged();
+                }
             }
         }
 
@@ -70,33 +79,36 @@
 
             set
             {
-                SetProperty(ref _selectedTypItem, value);
+                if (SetProperty(ref _selectedTypItem, value))
+                {
+                    CmdSuchen.RaiseCanExecuteChanged();
+                }
             }
         }
 
-        public List<MetadataItem> FilteredMetadataItems
+        public List<Document> FilteredDocumentItems
         {
             get
             {
-                return _filteredMetadataItems;
+                return _filteredDocumentItems;
             }
 
             set
             {
-                SetProperty(ref _filteredMetadataItems, value);
+                SetProperty(ref _filteredDocumentItems, value);
             }
         }
 
-        public MetadataItem SelectedMetadataItem
+        public Document SelectedDocumentItem
         {
             get
             {
-                return _selectedMetadataItem;
+                return _selectedDocumentItem;
             }
 
             set
             {
-                if (SetProperty(ref _selectedMetadataItem, value))
+                if (SetProperty(ref _selectedDocumentItem, value))
                 {
                     CmdOeffnen.RaiseCanExecuteChanged();
                 }
@@ -105,22 +117,46 @@
 
         private bool OnCanCmdOeffnen()
         {
-            return SelectedMetadataItem != null;
+            return SelectedDocumentItem != null;
         }
 
         private void OnCmdOeffnen()
         {
-            // TODO: Add your Code here
+            if (!OnCanCmdOeffnen()) return;
+            var storage = LoginView.ServiceProvider.GetService<IStorageService>();
+
+            storage.OpenDocumentExternal(SelectedDocumentItem);
         }
 
-        private void OnCmdSuchen()
+        private bool OnCanCmdSuchen()
         {
-            // TODO: Add your Code here
+            return !(string.IsNullOrEmpty(Suchbegriff) && string.IsNullOrEmpty(SelectedTypItem));
+        }
+
+        private async void OnCmdSuchen()
+        {
+            if(!OnCanCmdSuchen())
+                return;
+
+            try
+            {
+                var storage = LoginView.ServiceProvider.GetService<IStorageService>();
+
+                FilteredDocumentItems = await storage.SearchDocument(Suchbegriff, SelectedTypItem);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Failed to Search!");
+            }
+            
         }
 
         private void OnCmdReset()
         {
-            // TODO: Add your Code here
+            FilteredDocumentItems = new List<Document>();
+
+            Suchbegriff = string.Empty;
+            SelectedTypItem = string.Empty;
         }
     }
 }

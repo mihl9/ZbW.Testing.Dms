@@ -1,4 +1,6 @@
-﻿namespace ZbW.Testing.Dms.Client.Views
+﻿using System;
+
+namespace ZbW.Testing.Dms.Client.Views
 {
     using System.Windows;
 
@@ -9,8 +11,11 @@
     /// </summary>
     public partial class LoginView : Window
     {
-        public LoginView()
+        public static IServiceProvider ServiceProvider;
+
+        public LoginView(IServiceProvider serviceProvider)
         {
+            ServiceProvider = serviceProvider;
             InitializeComponent();
             DataContext = new LoginViewModel(this);
         }

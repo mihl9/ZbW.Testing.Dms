@@ -33,20 +33,24 @@
             <TextBlock Grid.Row="1" Grid.Column="0" Text="Typ"/>
             <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding TypItems}" SelectedItem="{Binding SelectedTypItem}"/>
 
-            <Button Grid.Row="0" Grid.Column="5" Content="Suchen"/>
-            <Button Grid.Row="1" Grid.Column="5" Content="Reset"/>
+            <Button Grid.Row="0" Grid.Column="5" Content="Suchen" Command="{Binding CmdSuchen}" IsEnabled="{Binding }"/>
+            <Button Grid.Row="1" Grid.Column="5" Content="Reset" Command="{Binding CmdReset}"/>
         </Grid>
         <DataGrid Grid.Row="1"
-                  ItemsSource="{Binding FilteredMetadataItems}"
-                  SelectedItem="{Binding SelectedMetadataItem}"
-                  AutoGenerateColumns="True">
-            <!--TODO: Remove AutoGenerateColumns="True" and specify your own columns -->
-            <!--<DataGrid.Columns>
-                <DataGridTextColumn Header="Typ" Binding="{Binding Typ}"/>
-                <DataGridTextColumn Header="Bezeichnung" Binding="{Binding Bezeichnung}"/>
-            </DataGrid.Columns>-->
+                  ItemsSource="{Binding FilteredDocumentItems}"
+                  SelectedItem="{Binding SelectedDocumentItem}"
+                  AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Typ" Binding="{Binding Metadata.Typ}"/>
+                <DataGridTextColumn Header="Bezeichnung" Binding="{Binding Metadata.FileName}"/>
+                <DataGridTextColumn Header="Dateityp" Binding="{Binding Metadata.FileEnding}"/>
+                <DataGridTextColumn Header="Valuta" Binding="{Binding Metadata.Valuta}"/>
+                <DataGridTextColumn Header="Schlüsselwörter" Binding="{Binding Metadata.Keywords}"/>
+                <DataGridTextColumn Header="Erstellt am" Binding="{Binding Metadata.CreationTime}"/>
+                <DataGridTextColumn Header="Erstellt von" Binding="{Binding Metadata.Username}"/>
+            </DataGrid.Columns>
         </DataGrid>
 
-        <Button Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right" Content="Öffnen" Width="100"/>
+        <Button Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right" Content="Öffnen" Width="100" Command="{Binding CmdOeffnen}"/>
     </Grid>
 </UserControl>

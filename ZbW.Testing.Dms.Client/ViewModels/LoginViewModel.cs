@@ -1,4 +1,6 @@
-﻿namespace ZbW.Testing.Dms.Client.ViewModels
+﻿using System;
+
+namespace ZbW.Testing.Dms.Client.ViewModels
 {
     using System.Windows;
 
