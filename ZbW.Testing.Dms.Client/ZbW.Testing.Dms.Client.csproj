@@ -85,15 +85,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\AppSettings.cs" />
     <Compile Include="Model\MetadataItem.cs" />
     <Compile Include="Repositories\ComboBoxItems.cs" />
     <Compile Include="Model\Document.cs" />
     <Compile Include="Repositories\Settings.cs" />
     <Compile Include="Services\BaseStorageHandler.cs" />
+    <Compile Include="Services\FileHandler.cs" />
     <Compile Include="Services\FilesystemStorageHandler.cs" />
+    <Compile Include="Services\Interfaces\IFileHandler.cs" />
     <Compile Include="Services\Interfaces\IMetadataService.cs" />
     <Compile Include="Services\Interfaces\IStorageService.cs" />
+    <Compile Include="Services\Interfaces\ISerializationHandler.cs" />
     <Compile Include="Services\MetadataService.cs" />
+    <Compile Include="Services\XmlHandler.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\DocumentDetailViewModel.cs" />

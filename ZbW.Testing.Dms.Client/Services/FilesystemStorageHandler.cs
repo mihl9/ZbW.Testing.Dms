@@ -12,31 +12,27 @@ using ZbW.Testing.Dms.Client.Services.Interfaces;
 
 namespace ZbW.Testing.Dms.Client.Services
 {
-    internal class FilesystemStorageHandler : BaseStorageHandler
+    public class FilesystemStorageHandler : BaseStorageHandler
     {
         private const string FileSuffix = "_Content";
+
+        private readonly IFileHandler _fileHandler;
+        private readonly AppSettings _appSettings;
         
-
-        private readonly string _repoPath;
-
-        public FilesystemStorageHandler(IMetadataService metadataService) : base(metadataService)
+        public FilesystemStorageHandler(IMetadataService metadataService, AppSettings appSettings, IFileHandler fileHandler) : base(metadataService)
         {
-            _repoPath = ConfigurationManager.AppSettings[Settings.RepositoryPath] + @"\";
-            PathValidity(_repoPath);
+            _appSettings = appSettings;
+            _fileHandler = fileHandler;
+
+            FileHandler.PathValidity(_appSettings.RepositoryPath);
         }
 
-        public void PathValidity(string path)
-        {
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-        }
         public override async Task<Document> LoadDocument(Guid id)
         {
             var metadata = await _metadataService.LoadMetadata(id);
             var document = new Document()
             {
+                Id = id,
                 Metadata = metadata
             };
 
@@ -53,13 +49,8 @@ namespace ZbW.Testing.Dms.Client.Services
 
             await _metadataService.SaveMetadata(document.Metadata, document.Id);
 
-            var path = _repoPath + document.Metadata.Valuta.Year + @"\" + document.Id + FileSuffix + document.Metadata.FileEnding;
-            using (var fileStream = File.Create(path))
-            {
-                await document.File.CopyToAsync(fileStream);
-                await fileStream.FlushAsync();
-            }
-
+            await _fileHandler.SaveFile(document.File,
+                document.Metadata.Valuta.Year + @"\" + document.Id + FileSuffix + document.Metadata.FileEnding);
         }
 
         public override async Task<List<Document>> SearchDocument(string term, string type)
@@ -67,7 +58,7 @@ namespace ZbW.Testing.Dms.Client.Services
             const string searchPattern = "*" + FileSuffix + ".*";
 
             var documents = new List<Document>();
-            var files = Directory.GetFiles(_repoPath, searchPattern, SearchOption.AllDirectories);
+            var files = await _fileHandler.SearchFiles(searchPattern);
 
             foreach (var file in files)
             {
@@ -79,8 +70,8 @@ namespace ZbW.Testing.Dms.Client.Services
                 }
 
                 var metadata = await _metadataService.LoadMetadata(id);
-                if (metadata.Typ.Equals(type) &&
-                    (term == "*" || term == null || (metadata.FileName.Contains(term) || metadata.Keywords.Contains(term))))
+                if ((string.IsNullOrEmpty(type) || metadata.Typ.Equals(type) )&&
+                    (term == "*" || string.IsNullOrEmpty(term) || (metadata.FileName.Contains(term) || metadata.Keywords.Contains(term))))
                 {
                     documents.Add(new Document()
                     {
@@ -95,8 +86,9 @@ namespace ZbW.Testing.Dms.Client.Services
 
         public override Task OpenDocumentExternal(Document document)
         {
-            var path = _repoPath + document.Metadata.Valuta.Year + @"\" + document.Id + FileSuffix + document.Metadata.FileEnding;
-            Process.Start(path);
+            var path = document.Metadata.Valuta.Year + @"\" + document.Id + FileSuffix + document.Metadata.FileEnding;
+
+            _fileHandler.OpenFile(path);
 
             return Task.CompletedTask;
         }

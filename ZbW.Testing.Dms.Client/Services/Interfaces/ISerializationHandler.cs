@@ -4,16 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ZbW.Testing.Dms.Client.Model;
 
 namespace ZbW.Testing.Dms.Client.Services.Interfaces
 {
-    public interface IMetadataService
+    public interface ISerializationHandler
     {
+        Task Serialize<TT>(TT obj, string path);
 
-        Task<MetadataItem> LoadMetadata(Guid id);
-
-        Task SaveMetadata(MetadataItem metadata, Guid id);
-
+        Task<TT> Deserialize<TT>(Stream xml);
     }
 }

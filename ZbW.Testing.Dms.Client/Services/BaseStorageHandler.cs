@@ -8,7 +8,7 @@ using ZbW.Testing.Dms.Client.Services.Interfaces;
 
 namespace ZbW.Testing.Dms.Client.Services
 {
-    internal abstract class BaseStorageHandler : IStorageService
+    public abstract class BaseStorageHandler : IStorageService
     {
         protected readonly IMetadataService _metadataService;
 

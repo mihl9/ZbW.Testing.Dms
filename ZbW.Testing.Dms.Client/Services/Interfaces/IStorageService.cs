@@ -7,7 +7,7 @@ using ZbW.Testing.Dms.Client.Model;
 
 namespace ZbW.Testing.Dms.Client.Services.Interfaces
 {
-    internal interface IStorageService
+    public interface IStorageService
     {
         Task<Document> LoadDocument(Guid id);
 
